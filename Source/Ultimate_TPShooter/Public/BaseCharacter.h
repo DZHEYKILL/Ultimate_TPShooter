@@ -36,8 +36,10 @@ public:
 	USpringArmComponent* SpringArm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UCameraComponent* Camera;
-
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FVector CameraForward;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FVector CameraRight;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 

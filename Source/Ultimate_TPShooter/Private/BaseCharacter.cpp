@@ -66,16 +66,22 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 }
 void ABaseCharacter::MoveForward(float Value)
 {
+	if (Value != 0.0f)
+	{
 	CameraForward.Z = 0.0f;
 	CameraForward.Normalize();	
 	AddMovementInput(CameraForward, Value);
+	}
 }
 
 void ABaseCharacter::MoveRight(float Value)
 {
+	if (Value != 0.0f)
+	{
 	CameraRight.Z = 0.0f;
 	CameraRight.Normalize();
 	AddMovementInput(CameraRight, Value);
+	}
 }
 
 void ABaseCharacter::LookUp(float Value)
