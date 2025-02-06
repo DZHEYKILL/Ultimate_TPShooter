@@ -40,6 +40,12 @@ public:
 	FVector CameraForward;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector CameraRight;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float WalkSpeed;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float SprintSpeed;
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 

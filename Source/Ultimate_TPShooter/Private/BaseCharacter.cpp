@@ -23,14 +23,15 @@ ABaseCharacter::ABaseCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
-	CameraForward = Camera->GetForwardVector();
-	CameraRight = Camera->GetRightVector();
 
+	WalkSpeed = 500.0f;
+	SprintSpeed = 1000.0f;
 	CharacterMovement = GetCharacterMovement();
 	CharacterMovement->bOrientRotationToMovement = true;
-	CharacterMovement->MaxWalkSpeed = 400.0f;
-
-
+	CharacterMovement->MaxWalkSpeed = WalkSpeed;
+	CharacterMovement->MaxAcceleration = 800.0f;
+	CharacterMovement->BrakingDecelerationWalking = 800.0f;
+	CharacterMovement->BrakingFriction = 0.4f;
 }
 
 // Called when the game starts or when spawned
@@ -68,9 +69,20 @@ void ABaseCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
 	{
+
+		/*
 	CameraForward.Z = 0.0f;
 	CameraForward.Normalize();	
-	AddMovementInput(CameraForward, Value);
+		AddMovementInput(CameraForward, Value);
+		*/
+
+		FRotator ControlRotation = Controller->GetControlRotation();
+		FVector ForwardVector = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X); // Получаем ось X (вперёд)
+
+		ForwardVector.Z = 0.0f;
+		ForwardVector.Normalize();
+
+		AddMovementInput(ForwardVector, Value);
 	}
 }
 
@@ -78,9 +90,12 @@ void ABaseCharacter::MoveRight(float Value)
 {
 	if (Value != 0.0f)
 	{
-	CameraRight.Z = 0.0f;
-	CameraRight.Normalize();
-	AddMovementInput(CameraRight, Value);
+		FRotator ControlRotation = Controller->GetControlRotation();
+		FVector RightVector = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y); 
+
+		RightVector.Z = 0.0f;
+		RightVector.Normalize();
+		AddMovementInput(RightVector, Value);
 	}
 }
 
@@ -101,12 +116,12 @@ void ABaseCharacter::fJump()
 
 void ABaseCharacter::StartSprint()
 {
-	CharacterMovement->MaxWalkSpeed = 800.0f;
+	CharacterMovement->MaxWalkSpeed = SprintSpeed;
 }
 
 void ABaseCharacter::StopSprint()
 {
-	CharacterMovement->MaxWalkSpeed = 400.0f;
+	CharacterMovement->MaxWalkSpeed = WalkSpeed;
 
 }
 
