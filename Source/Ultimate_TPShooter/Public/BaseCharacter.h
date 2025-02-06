@@ -8,6 +8,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class USoundCue;
 
 UCLASS()
 class ULTIMATE_TPSHOOTER_API ABaseCharacter : public ACharacter
@@ -46,6 +47,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float SprintSpeed;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	USoundCue* FireSound;
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
@@ -56,6 +60,7 @@ public:
 	void StartSprint();
 	void StopSprint();
 
+	void FireWeapon();
 
 
 };

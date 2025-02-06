@@ -4,9 +4,9 @@
 #include "BaseCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -63,6 +63,9 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ABaseCharacter::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ABaseCharacter::StopSprint);
+
+	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ABaseCharacter::FireWeapon);
+
 
 }
 void ABaseCharacter::MoveForward(float Value)
@@ -123,5 +126,14 @@ void ABaseCharacter::StopSprint()
 {
 	CharacterMovement->MaxWalkSpeed = WalkSpeed;
 
+}
+
+void ABaseCharacter::FireWeapon()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Fire"));
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySound2D(this,FireSound);
+	}
 }
 
