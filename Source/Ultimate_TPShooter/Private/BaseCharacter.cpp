@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -134,6 +136,41 @@ void ABaseCharacter::FireWeapon()
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySound2D(this,FireSound);
+	}
+	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
+	FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+	if (BarrelSocket)
+	{
+		if (MuzzleFlash)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
+		}
+		FHitResult HitResult;
+		FVector TraceStart = SocketTransform.GetLocation();
+		FQuat Rotation = SocketTransform.GetRotation();
+		FVector RotationAxis = Rotation.GetAxisX();
+		FVector TraceEnd = TraceStart + RotationAxis * 50'000.0f;
+
+		GetWorld()->LineTraceSingleByChannel
+			(HitResult,
+			TraceStart,
+			TraceEnd,
+			ECC_Visibility);
+		if (HitResult.bBlockingHit)
+		{
+			DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 2.0f);
+			DrawDebugPoint(GetWorld(), HitResult.Location, 5.f, FColor::Green, false, 2.0f);
+			if (ImpactPerticle)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactPerticle, HitResult.Location);
+			}
+		}
+	}
+	UAnimInstance* AnimInstanse = GetMesh()->GetAnimInstance();
+	if (AnimInstanse && HipFireMontage)
+	{
+		AnimInstanse->Montage_Play(HipFireMontage);
+		AnimInstanse->Montage_JumpToSection(FName("StartFire"));
 	}
 }
 

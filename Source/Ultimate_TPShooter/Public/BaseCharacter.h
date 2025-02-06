@@ -9,6 +9,8 @@
 class USpringArmComponent;
 class UCameraComponent;
 class USoundCue;
+class UParticleSystem;
+class UAnimMontage;
 
 UCLASS()
 class ULTIMATE_TPSHOOTER_API ABaseCharacter : public ACharacter
@@ -47,8 +49,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float SprintSpeed;
 
+	//Combat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	USoundCue* FireSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UParticleSystem* MuzzleFlash;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UParticleSystem* ImpactPerticle;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimMontage* HipFireMontage;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
