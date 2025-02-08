@@ -27,4 +27,10 @@ public:
 	bool bIsInAir;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsAccelerating;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MovementOffset;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bAimingAnim;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bFireAnim;
 };

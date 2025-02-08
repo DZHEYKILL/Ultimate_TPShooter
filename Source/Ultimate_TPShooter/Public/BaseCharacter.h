@@ -35,30 +35,49 @@ private:
 	UCharacterMovementComponent* CharacterMovement;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArm;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* Camera;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	FVector CameraForward;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	FVector CameraRight;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	float WalkSpeed;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
 
 	//Combat
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
 	USoundCue* FireSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
 	UParticleSystem* MuzzleFlash;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
 	UParticleSystem* ImpactPerticle;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	UAnimMontage* HipFireMontage;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bFire;
+	bool bShouldFire;
+	float AutomaticFireRate;
+	FTimerHandle AutoFireTimer;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bAiming;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	float DefaultFOV;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	float ZoomFOV;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	float ShootTimerDuration;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	bool bFiringBullet;
+	FTimerHandle CrosshairShootTimer;
+
+
+	//Movement
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 
@@ -69,7 +88,21 @@ public:
 	void StartSprint();
 	void StopSprint();
 
+	//Combat
 	void FireWeapon();
+	void StartFireWeapon();
+	void StopFireWeapon();
 
+	void StartFireTimer();
+
+	void AutoFireRest();
+
+	void AimingPressed();
+	void AimingReleased();
+	
+	void StartCrosshairBulletFire();
+
+	UFUNCTION()
+	void FinishCrosshairBulletFire();
 
 };

@@ -17,7 +17,18 @@ ABaseCharacter::ABaseCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-	//Base Components
+	//Variables
+	bAiming = false;
+	DefaultFOV = 100.f;
+	ZoomFOV = 50.f;
+	
+	ShootTimerDuration = 0.05f;
+	bFiringBullet = false;
+	AutomaticFireRate = 0.1f;
+	bShouldFire = true;
+	bFire = false;
+
+	//Components
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->bUsePawnControlRotation = true;
@@ -25,6 +36,7 @@ ABaseCharacter::ABaseCharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
+	Camera->FieldOfView = DefaultFOV;
 
 	WalkSpeed = 500.0f;
 	SprintSpeed = 1000.0f;
@@ -48,6 +60,7 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
 }
 
 //Base Movement
@@ -66,10 +79,16 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ABaseCharacter::StartSprint);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ABaseCharacter::StopSprint);
 
-	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ABaseCharacter::FireWeapon);
+	PlayerInputComponent->BindAction("FireButton", IE_Pressed, this, &ABaseCharacter::StartFireWeapon);
+	PlayerInputComponent->BindAction("FireButton", IE_Released, this, &ABaseCharacter::StopFireWeapon);
+
+	PlayerInputComponent->BindAction("Aiming", IE_Pressed, this, &ABaseCharacter::AimingPressed);
+	PlayerInputComponent->BindAction("Aiming", IE_Released, this, &ABaseCharacter::AimingReleased);
 
 
 }
+
+//Movement
 void ABaseCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
@@ -130,21 +149,26 @@ void ABaseCharacter::StopSprint()
 
 }
 
+//Combat
 void ABaseCharacter::FireWeapon()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fire"));
+	
+
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySound2D(this,FireSound);
 	}
+
 	const USkeletalMeshSocket* BarrelSocket = GetMesh()->GetSocketByName("BarrelSocket");
 	FTransform SocketTransform = BarrelSocket->GetSocketTransform(GetMesh());
+
 	if (BarrelSocket)
 	{
 		if (MuzzleFlash)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, SocketTransform);
 		}
+		/*
 		FHitResult HitResult;
 		FVector TraceStart = SocketTransform.GetLocation();
 		FQuat Rotation = SocketTransform.GetRotation();
@@ -165,6 +189,42 @@ void ABaseCharacter::FireWeapon()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactPerticle, HitResult.Location);
 			}
 		}
+		*/
+	}
+	FVector2D ViewPortSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewPortSize);
+	}
+	FVector2D CrosshairLocation(ViewPortSize.X / 2.0f, ViewPortSize.Y / 2.0f);
+	CrosshairLocation.Y -= 40.0f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation, 
+		CrosshairWorldPosition, 
+		CrosshairWorldDirection);
+
+	if (bScreenToWorld)
+	{
+		FHitResult ScreenTraceHit;
+		FVector TraceStart = CrosshairWorldPosition;
+		FVector TraceEnd = CrosshairWorldPosition + CrosshairWorldDirection * 50'000.f;
+
+		FVector BeamEndPoint = TraceEnd;
+		GetWorld()->LineTraceSingleByChannel(ScreenTraceHit,
+			TraceStart,
+			TraceEnd,
+			ECC_Visibility);
+		if (ScreenTraceHit.bBlockingHit)
+		{
+			BeamEndPoint = ScreenTraceHit.Location;
+			if (ImpactPerticle)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactPerticle, ScreenTraceHit.Location);
+			}
+		}
 	}
 	UAnimInstance* AnimInstanse = GetMesh()->GetAnimInstance();
 	if (AnimInstanse && HipFireMontage)
@@ -172,5 +232,70 @@ void ABaseCharacter::FireWeapon()
 		AnimInstanse->Montage_Play(HipFireMontage);
 		AnimInstanse->Montage_JumpToSection(FName("StartFire"));
 	}
+	StartCrosshairBulletFire();
+
+	
+}
+
+void ABaseCharacter::StartFireWeapon()
+{
+	bFire = true;
+	StartFireTimer();
+}
+
+void ABaseCharacter::StopFireWeapon()
+{
+	bFire = false;
+}
+
+void ABaseCharacter::StartFireTimer()
+{
+	if (bShouldFire) {
+
+		FireWeapon();
+		bShouldFire = false;
+		GetWorldTimerManager().SetTimer(AutoFireTimer, this, &ABaseCharacter::AutoFireRest, AutomaticFireRate);
+
+	}
+}
+
+void ABaseCharacter::AutoFireRest()
+{
+	bShouldFire = true;
+	if (bFire)
+	{
+		StartFireTimer();
+	}
+}
+
+void ABaseCharacter::AimingPressed()
+{
+	bAiming = true;
+	Camera->FieldOfView = ZoomFOV;
+	bUseControllerRotationYaw = bAiming;
+
+}
+
+void ABaseCharacter::AimingReleased()
+{
+	bAiming = false;
+	Camera->FieldOfView = DefaultFOV;
+	bUseControllerRotationYaw = bAiming;
+
+}
+
+void ABaseCharacter::StartCrosshairBulletFire()
+{
+	bFiringBullet = true;
+
+	GetWorldTimerManager().SetTimer(CrosshairShootTimer, 
+		this, 
+		&ABaseCharacter::FinishCrosshairBulletFire,
+		ShootTimerDuration);
+}
+
+void ABaseCharacter::FinishCrosshairBulletFire()
+{
+	bFiringBullet = false;
 }
 

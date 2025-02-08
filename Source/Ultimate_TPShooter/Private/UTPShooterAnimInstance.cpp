@@ -4,6 +4,7 @@
 #include "UTPShooterAnimInstance.h"
 #include "BaseCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UUTPShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 {
@@ -21,6 +22,9 @@ void UUTPShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		//Air Check
 		bIsInAir = ShooterCharacter->GetCharacterMovement()->IsFalling();
 
+		bAimingAnim = ShooterCharacter->bAiming;
+
+		bFireAnim = ShooterCharacter->bFire;
 		//Acceleration bool
 		if (ShooterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f)
 		{
@@ -29,6 +33,17 @@ void UUTPShooterAnimInstance::UpdateAnimationProperties(float DeltaTime)
 		else 
 		{
 			bIsAccelerating = false;
+		}
+		FRotator AimRotation = ShooterCharacter->GetBaseAimRotation();
+
+		FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(ShooterCharacter->GetVelocity());
+		MovementOffset = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation).Yaw;
+		
+		
+		FString OffsetMessage = FString::Printf(TEXT("Movement Offset Yaw: %f"), MovementOffset);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(1, 0.0f, FColor::White, OffsetMessage);
 		}
 	}
 }
