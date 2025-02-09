@@ -62,18 +62,19 @@ void ABaseCharacter::BeginPlay()
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	FHitResult ItemTraceResult;
-	TraceUnderCrosshairs(ItemTraceResult);
-	if (ItemTraceResult.bBlockingHit)
+	if (bShouldTraceForItems)
 	{
-		AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
-		if (HitItem && HitItem->GetPickupWidget())
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
+		if (ItemTraceResult.bBlockingHit)
 		{
-			HitItem->GetPickupWidget()->SetVisibility(true);
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (HitItem && HitItem->GetPickupWidget())
+			{
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
 		}
-		
-
 	}
 }
 
