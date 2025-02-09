@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
+#include "BaseCharacter.h"
 // Sets default values
 AItem::AItem()
 {
@@ -32,17 +33,25 @@ void AItem::BeginPlay()
 	Super::BeginPlay();
 	PickupWidget->SetVisibility(false);
 	
-	//AreaComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
-	//AreaComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
+	AreaComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
+	AreaComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
 }
 
 void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep)
 {
-
+	if (OtherActor)
+	{
+		ABaseCharacter* ShooterCharacter = Cast<ABaseCharacter>(OtherActor);
+		if (ShooterCharacter)
+		{
+			ShooterCharacter->IncrementOverlappedItemCount(-1);
+		}
+	}
 }
 
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep)
 {
+	
 }
 
 // Called every frame

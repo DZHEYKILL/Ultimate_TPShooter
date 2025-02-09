@@ -30,6 +30,7 @@ ABaseCharacter::ABaseCharacter()
 	bShouldFire = true;
 	bFire = false;
 
+	bShouldTraceForItems = false;
 	//Components
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
 	SpringArm->SetupAttachment(RootComponent);
@@ -345,5 +346,19 @@ bool ABaseCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
 		}
 	}
 	return false;
+}
+
+void ABaseCharacter::IncrementOverlappedItemCount(int8 Amount)
+{
+	if (OverlappedItemCount + Amount <= 0)
+	{
+		OverlappedItemCount = 0;
+		bShouldTraceForItems = false;
+	}
+	else
+	{
+		OverlappedItemCount += Amount;
+		bShouldTraceForItems = true;
+	}
 }
 

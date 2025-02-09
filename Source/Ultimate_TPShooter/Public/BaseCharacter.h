@@ -76,7 +76,9 @@ public:
 	bool bFiringBullet;
 	FTimerHandle CrosshairShootTimer;
 
+	bool bShouldTraceForItems;
 
+	int8 OverlappedItemCount;
 	//Movement
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -107,4 +109,10 @@ public:
 	UFUNCTION()
 	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
 
+	FORCEINLINE int8 GetOverlappedItemCount() const {
+
+		return OverlappedItemCount;
+	}
+
+	void IncrementOverlappedItemCount(int8 Amount);
 };
