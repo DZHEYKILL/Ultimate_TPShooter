@@ -9,6 +9,8 @@
 #include "Sound/SoundCue.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "DrawDebugHelpers.h"
+#include "Item.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -60,7 +62,18 @@ void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	FHitResult ItemTraceResult;
+	TraceUnderCrosshairs(ItemTraceResult);
+	if (ItemTraceResult.bBlockingHit)
+	{
+		AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+		if (HitItem && HitItem->GetPickupWidget())
+		{
+			HitItem->GetPickupWidget()->SetVisibility(true);
+		}
+		
 
+	}
 }
 
 //Base Movement
@@ -297,5 +310,40 @@ void ABaseCharacter::StartCrosshairBulletFire()
 void ABaseCharacter::FinishCrosshairBulletFire()
 {
 	bFiringBullet = false;
+}
+
+bool ABaseCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
+{
+	FVector2D ViewPortSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewPortSize);
+	}
+
+	FVector2D CrosshairLocation(ViewPortSize.X / 2.0f, ViewPortSize.Y / 2.0f);
+	CrosshairLocation.Y -= 40.0f;
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection);
+	if (bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;
+		FVector End = Start + CrosshairWorldDirection * 500.f;
+		GetWorld()->LineTraceSingleByChannel(
+		OutHitResult,
+			Start,
+			End,
+			ECC_Visibility);
+
+		if (OutHitResult.bBlockingHit)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 

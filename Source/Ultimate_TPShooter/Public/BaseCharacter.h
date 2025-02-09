@@ -104,5 +104,7 @@ public:
 
 	UFUNCTION()
 	void FinishCrosshairBulletFire();
+	UFUNCTION()
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
 
 };

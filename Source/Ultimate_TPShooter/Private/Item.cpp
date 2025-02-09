@@ -3,7 +3,8 @@
 
 #include "Item.h"
 #include "Components/BoxComponent.h"
-
+#include "Components/WidgetComponent.h"
+#include "Components/SphereComponent.h"
 // Sets default values
 AItem::AItem()
 {
@@ -15,13 +16,33 @@ AItem::AItem()
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>("CollisionBox");
 	CollisionBox->SetupAttachment(ItemMesh);
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>("PickUpWidget");
+	PickupWidget->SetupAttachment(GetRootComponent());
+
+	AreaComponent = CreateDefaultSubobject<USphereComponent>("AreaComponent");
+	AreaComponent->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
+	PickupWidget->SetVisibility(false);
 	
+	//AreaComponent->OnComponentBeginOverlap.AddDynamic(this, &AItem::OnSphereOverlap);
+	//AreaComponent->OnComponentEndOverlap.AddDynamic(this, &AItem::OnSphereEndOverlap);
+}
+
+void AItem::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep)
+{
+
+}
+
+void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep)
+{
 }
 
 // Called every frame
