@@ -11,6 +11,8 @@ class UCameraComponent;
 class USoundCue;
 class UParticleSystem;
 class UAnimMontage;
+class AItem;
+class AWeapon;
 
 UCLASS()
 class ULTIMATE_TPSHOOTER_API ABaseCharacter : public ACharacter
@@ -43,13 +45,17 @@ public:
 	FVector CameraForward;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	FVector CameraRight;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	float WalkSpeed;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
 
-	//Combat
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items")
+	AItem* TraceHitItemLastFrame;
+
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
 	USoundCue* FireSound;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combat")
@@ -64,6 +70,7 @@ public:
 	bool bShouldFire;
 	float AutomaticFireRate;
 	FTimerHandle AutoFireTimer;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bAiming;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
@@ -107,7 +114,7 @@ public:
 	UFUNCTION()
 	void FinishCrosshairBulletFire();
 	UFUNCTION()
-	bool TraceUnderCrosshairs(FHitResult& OutHitResult);
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult,FVector& OutHitLocation);
 
 	FORCEINLINE int8 GetOverlappedItemCount() const {
 
@@ -115,4 +122,11 @@ public:
 	}
 
 	void IncrementOverlappedItemCount(int8 Amount);
+
+	void TraceForItems();
+
+	void SpawnDefaultWeapon();
+
+	void EquipWeapon(AWeapon* WeaponToEquip);
+
 };

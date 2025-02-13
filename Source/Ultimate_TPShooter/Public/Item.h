@@ -28,14 +28,14 @@ protected:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex,
-		bool bFromSweep);
+		bool bFromSweep,
+		const FHitResult& SweepResult);
 
 	UFUNCTION()
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep);
+		int32 OtherBodyIndex);
 
 public:	
 	// Called every frame
@@ -55,4 +55,7 @@ public:
 	}
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemProperties")
 	USphereComponent* AreaComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemProperties")
+	FString ItemName;
 };

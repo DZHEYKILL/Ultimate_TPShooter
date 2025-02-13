@@ -62,20 +62,9 @@ void ABaseCharacter::BeginPlay()
 void ABaseCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (bShouldTraceForItems)
-	{
-		FHitResult ItemTraceResult;
-		FVector HitLocation;
-		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
-		if (ItemTraceResult.bBlockingHit)
-		{
-			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
-			if (HitItem && HitItem->GetPickupWidget())
-			{
-				HitItem->GetPickupWidget()->SetVisibility(true);
-			}
-		}
-	}
+
+	TraceForItems();
+
 }
 
 //Base Movement
@@ -314,7 +303,7 @@ void ABaseCharacter::FinishCrosshairBulletFire()
 	bFiringBullet = false;
 }
 
-bool ABaseCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult)
+bool ABaseCharacter::TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation)
 {
 	FVector2D ViewPortSize;
 	if (GEngine && GEngine->GameViewport)
@@ -361,5 +350,51 @@ void ABaseCharacter::IncrementOverlappedItemCount(int8 Amount)
 		OverlappedItemCount += Amount;
 		bShouldTraceForItems = true;
 	}
+}
+
+void ABaseCharacter::TraceForItems()
+{
+	if (bShouldTraceForItems)
+	{
+		FHitResult ItemTraceResult;
+		FVector HitLocation;
+		TraceUnderCrosshairs(ItemTraceResult, HitLocation);
+		if (ItemTraceResult.bBlockingHit)
+		{
+			AItem* HitItem = Cast<AItem>(ItemTraceResult.GetActor());
+			if (HitItem && HitItem->GetPickupWidget())
+			{
+				HitItem->GetPickupWidget()->SetVisibility(true);
+			}
+
+			if (TraceHitItemLastFrame)
+			{
+				if (HitItem != TraceHitItemLastFrame)
+				{
+					TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+				}
+			}
+
+			TraceHitItemLastFrame = HitItem;
+			
+		}
+	}
+	else if (TraceHitItemLastFrame)
+	{
+		TraceHitItemLastFrame->GetPickupWidget()->SetVisibility(false);
+	}
+}
+
+void ABaseCharacter::SpawnDefaultWeapon()
+{
+	if (WeaponToEquip)
+	{
+		const USkeletalMeshSocket* HandSocket = GetMesh()->GetSocketBoneName(FName("RightHandSocket"));
+	}
+}
+
+void ABaseCharacter::EquipWeapon(AWeapon* WeaponToEquip)
+{
+
 }
 
